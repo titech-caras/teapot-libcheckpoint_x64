@@ -7,7 +7,7 @@ void *old_rsp;
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define SCRATCHPAD_TOP "scratchpad+" STR(SCRATCHPAD_SIZE)
+#define SCRATCHPAD_TOP "scratchpad+" STR(SCRATCHPAD_SIZE - 8)
 
 #define SWITCH_TO_SCRATCHPAD_STACK "mov %rsp, old_rsp\n" "lea " SCRATCHPAD_TOP ", %rsp\n"
 #define SWITCH_TO_ORIGINAL_STACK "mov old_rsp, %rsp\n"
@@ -23,8 +23,10 @@ __attribute__((naked)) void make_checkpoint() {
         "push %rax\n"
         "push %rbx\n"
         "mov checkpoint_cnt, %rax\n"
-        "cmp $" STR(MAX_CHECKPOINTS) ", %rax\n" // TODO: use a better strategy to determine checkpoint skipping
-        "jge .Lskip_checkpoint\n"
+        /*"cmp $" STR(MAX_CHECKPOINTS) ", %rax\n" // TODO: use a better strategy to determine checkpoint skipping
+        "jge .Lskip_checkpoint\n"*/
+        "cmpb $0, libcheckpoint_enabled\n"
+        "je .Lskip_checkpoint\n"
         "incl checkpoint_cnt\n" // Increment count in memory
         );
 
