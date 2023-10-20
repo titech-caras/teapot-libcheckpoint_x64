@@ -6,14 +6,11 @@ checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
 xsave_area_t processor_extended_states[MAX_CHECKPOINTS];
 
 memory_history_t memory_history[MEM_HISTORY_LEN];
+memory_history_t *memory_history_top = &memory_history[0];
+
 uint64_t checkpoint_cnt = 0;
 uint64_t instruction_cnt = 0;
 bool libcheckpoint_enabled = false;
-
-memory_history_t *memory_history_top = &memory_history[0];
-
-uint64_t shadow_stack[1024];
-uint64_t *shadow_stack_top = shadow_stack + 1024 - 8;
 
 void __asan_init();
 
