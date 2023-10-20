@@ -15,7 +15,10 @@ memory_history_t *memory_history_top = &memory_history[0];
 uint64_t shadow_stack[1024];
 uint64_t *shadow_stack_top = shadow_stack + 1024 - 8;
 
+void __asan_init();
+
 void libcheckpoint_enable() {
+    __asan_init();
     libcheckpoint_enabled = true;
 
     map_dift_pages();
