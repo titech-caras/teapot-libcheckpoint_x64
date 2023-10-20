@@ -36,6 +36,8 @@ typedef __attribute__((aligned(64))) struct xsave_area {
     char data[2048];
 } xsave_area_t;
 
+extern uint64_t checkpoint_cnt;
+
 void libcheckpoint_enable();
 void libcheckpoint_disable();
 void make_checkpoint();

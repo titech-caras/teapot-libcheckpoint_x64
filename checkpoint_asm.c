@@ -12,6 +12,8 @@ void *old_rsp;
 #define SWITCH_TO_SCRATCHPAD_STACK "mov %rsp, old_rsp\n" "lea " SCRATCHPAD_TOP ", %rsp\n"
 #define SWITCH_TO_ORIGINAL_STACK "mov old_rsp, %rsp\n"
 
+// FIXME: refactor this thing, why is a file full of assembly .c?
+
 struct {
     void *trampoline_addr, *return_addr;
 } checkpoint_target_metadata;
@@ -39,7 +41,19 @@ __attribute__((naked)) void make_checkpoint() {
         "push %rdx\n"
         "mov $0xFFFFFFFF, %eax\n"
         "mov $0xFFFFFFFF, %edx\n" // TODO: maybe save only the necessary components?
-        "xsave (%rbx)\n"
+        //"xsave (%rbx)\n"
+
+        //"fxsave64 (%rbx)\n"
+
+        "movaps %xmm0, (%rbx)\n"
+        "movaps %xmm1, 16(%rbx)\n"
+        "movaps %xmm2, 32(%rbx)\n"
+        "movaps %xmm3, 48(%rbx)\n"
+        "movaps %xmm4, 64(%rbx)\n"
+        "movaps %xmm5, 80(%rbx)\n"
+        "movaps %xmm6, 96(%rbx)\n"
+        "movaps %xmm7, 112(%rbx)\n"
+
         "pop %rdx\n"
         "pop %rax\n"
         );
@@ -128,7 +142,18 @@ __attribute__((naked)) void restore_checkpoint_registers() {
         "add %r9, %r8\n"
         "mov $0xFFFFFFFF, %eax\n"
         "mov $0xFFFFFFFF, %edx\n" // TODO: maybe restore only the necessary components?
-        "xrstor (%r8)\n"
+        //"xrstor (%r8)\n"
+        //"fxrstor64 (%r8)\n"
+
+        "movaps (%r8), %xmm0 \n"
+        "movaps 16(%r8), %xmm1 \n"
+        "movaps 32(%r8), %xmm2 \n"
+        "movaps 48(%r8), %xmm3 \n"
+        "movaps 64(%r8), %xmm4 \n"
+        "movaps 80(%r8), %xmm5 \n"
+        "movaps 96(%r8), %xmm6 \n"
+        "movaps 112(%r8), %xmm7 \n"
+
         "mov %r11, %rax\n"
         );
 
