@@ -3,12 +3,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//#define ROB_LEN 250
-#define ROB_LEN 50
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
-#define MEM_HISTORY_LEN 1000
+#define MEM_HISTORY_LEN 1024
+#define SCRATCHPAD_SIZE 1048576
+#define MAX_CHECKPOINTS 1
 
-#define MAX_CHECKPOINTS 3
+#define SCRATCHPAD_TOP "scratchpad+" STR(SCRATCHPAD_SIZE - 8)
+
+#define SWITCH_TO_SCRATCHPAD_STACK "mov %rsp, old_rsp\n" "lea " SCRATCHPAD_TOP ", %rsp\n"
+#define SWITCH_TO_ORIGINAL_STACK "mov old_rsp, %rsp\n"
 
 typedef struct memory_history {
     void *addr;
@@ -36,13 +41,23 @@ typedef __attribute__((aligned(64))) struct xsave_area {
     char data[2048];
 } xsave_area_t;
 
+typedef __attribute__((aligned(16))) uint8_t scratchpad_t[SCRATCHPAD_SIZE];
+
+#define ROLLBACK_ROB_LEN 0
+#define ROLLBACK_ASAN 1
+#define ROLLBACK_SIGSEGV 2
+#define ROLLBACK_EXT_LIB 3
+#define ROLLBACK_MALFORMED_INDIRECT_BR 4
+
+extern scratchpad_t scratchpad;
+extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
 extern uint64_t checkpoint_cnt;
 
 void libcheckpoint_enable();
 void libcheckpoint_disable();
 void make_checkpoint();
 void add_instruction_counter_check_restore();
-void restore_checkpoint();
+void restore_checkpoint(int type);
 void restore_checkpoint_registers();
 /*void log_write(void *addr, uint64_t data, uint8_t size);
 void increase_instruction_cnt();

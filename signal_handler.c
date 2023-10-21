@@ -8,11 +8,15 @@
 #include <string.h>
 #include <ucontext.h>
 
+extern void restore_checkpoint_SIGSEGV();
+
 void signal_handler(int sig, siginfo_t *info, void *ucontext) {
     if (checkpoint_cnt != 0) {
+        fprintf(stderr, "[NaHCO3], 11,\n");
+
         ucontext_t *uc = (ucontext_t *)ucontext;
         greg_t *rip = &uc->uc_mcontext.gregs[REG_RIP];
-        *rip = (int64_t)&restore_checkpoint;
+        *rip = (int64_t)&restore_checkpoint_SIGSEGV;
     } else {
         fprintf(stderr, "Signal caught outside simulation: %s\n", strsignal(sig));
         abort();
