@@ -55,10 +55,8 @@ extern uint64_t checkpoint_cnt;
 
 void libcheckpoint_enable();
 void libcheckpoint_disable();
+
 void make_checkpoint();
 void add_instruction_counter_check_restore();
 void restore_checkpoint(int type);
 void restore_checkpoint_registers();
-/*void log_write(void *addr, uint64_t data, uint8_t size);
-void increase_instruction_cnt();
-void after_one_instruction();*/
