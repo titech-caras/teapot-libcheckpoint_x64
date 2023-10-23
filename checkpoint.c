@@ -27,6 +27,11 @@ uint64_t PROTECTED_ZONE_END;
 void __asan_init();
 
 void poison_protected_zone() {
+    // Poison first page
+    for (void *i = (void*)0; i < (void*)4096; i += 64 * 8) {
+        *(uint64_t*)(0x7fff8000 + ((uint64_t)i >> 3)) = -1;
+    }
+
     for (void *i = &PROTECTED_ZONE_START; i <= (void*)&PROTECTED_ZONE_END; i += 64 * 8) {
         *(uint64_t*)(0x7fff8000 + ((uint64_t)i >> 3)) = -1;
     }
