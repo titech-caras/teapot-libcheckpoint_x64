@@ -1,7 +1,9 @@
 #include "checkpoint.h"
 #include "signal_handler.h"
 #include "dift_support.h"
+
 #include <stdio.h>
+#include <assert.h>
 
 uint64_t PROTECTED_ZONE_START;
 
@@ -13,10 +15,7 @@ memory_history_t *memory_history_top = &memory_history[0];
 scratchpad_t scratchpad;
 void *old_rsp;
 
-struct {
-    uint64_t total_ckpt;
-    uint64_t rollback_reason[5];
-} statistics;
+statistics_t simulation_statistics;
 
 uint64_t checkpoint_cnt = 0;
 uint64_t instruction_cnt = 0;
@@ -38,13 +37,16 @@ void poison_protected_zone() {
 }
 
 void print_statistics() {
-    fprintf(stderr, "Statistics:\n");
-    fprintf(stderr, "\tCheckpoints: %lu\n", statistics.total_ckpt);
-    fprintf(stderr, "\tRollback ROB_LEN: %lu\n", statistics.rollback_reason[ROLLBACK_ROB_LEN]);
-    fprintf(stderr, "\tRollback ASAN: %lu\n", statistics.rollback_reason[ROLLBACK_ASAN]);
-    fprintf(stderr, "\tRollback SIGSEGV: %lu\n", statistics.rollback_reason[ROLLBACK_SIGSEGV]);
-    fprintf(stderr, "\tRollback EXT_LIB: %lu\n", statistics.rollback_reason[ROLLBACK_EXT_LIB]);
-    fprintf(stderr, "\tRollback MALFORMED_INDIRECT_BR: %lu\n", statistics.rollback_reason[ROLLBACK_MALFORMED_INDIRECT_BR]);
+    fprintf(stderr, "Total Checkpoints: %lu\n", simulation_statistics.total_ckpt);
+    fprintf(stderr, "\tRollback ROB_LEN: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_ROB_LEN]);
+    //fprintf(stderr, "\tRollback ASAN: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_ASAN]);
+    fprintf(stderr, "\tRollback SIGSEGV: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_SIGSEGV]);
+    fprintf(stderr, "\tRollback EXT_LIB: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_EXT_LIB]);
+    fprintf(stderr, "\tRollback MALFORMED_INDIRECT_BR: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_MALFORMED_INDIRECT_BR]);
+
+    fprintf(stderr, "Total Bugs: %lu\n", simulation_statistics.total_bug);
+    fprintf(stderr, "\tBug ASAN: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_ASAN]);
+    fprintf(stderr, "\tBug SIGSEGV: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_SIGSEGV]);
 }
 
 __attribute__((preserve_most)) void libcheckpoint_enable() {
@@ -71,14 +73,16 @@ __attribute__((preserve_most)) void libcheckpoint_disable() {
     }
 
 DEF_RESTORE_CHECKPOINT(ROB_LEN)
-DEF_RESTORE_CHECKPOINT(ASAN)
+//DEF_RESTORE_CHECKPOINT(ASAN)
 DEF_RESTORE_CHECKPOINT(SIGSEGV)
 DEF_RESTORE_CHECKPOINT(EXT_LIB)
 DEF_RESTORE_CHECKPOINT(MALFORMED_INDIRECT_BR)
 
 void restore_checkpoint(int type) {
-    statistics.total_ckpt++;
-    statistics.rollback_reason[type]++;
+    assert(checkpoint_cnt > 0);
+
+    simulation_statistics.total_ckpt++;
+    simulation_statistics.rollback_reason[type]++;
 
     checkpoint_cnt--;
     while (memory_history_top > checkpoint_metadata[checkpoint_cnt].memory_history_top) {

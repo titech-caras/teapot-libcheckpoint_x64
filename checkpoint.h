@@ -36,6 +36,14 @@ typedef __attribute__((aligned(256))) struct checkpoint_metadata {
     uint64_t alignment[12];
 } checkpoint_metadata_t;
 
+typedef struct statistics {
+    uint64_t total_ckpt;
+    uint64_t rollback_reason[5];
+
+    uint64_t total_bug;
+    uint64_t bug_type[20];
+} statistics_t;
+
 typedef __attribute__((aligned(64))) struct xsave_area {
     // Let's just give XSAVE more than enough room...
     char data[2048];
@@ -44,14 +52,18 @@ typedef __attribute__((aligned(64))) struct xsave_area {
 typedef __attribute__((aligned(16))) uint8_t scratchpad_t[SCRATCHPAD_SIZE];
 
 #define ROLLBACK_ROB_LEN 0
-#define ROLLBACK_ASAN 1
+//#define ROLLBACK_ASAN 1
 #define ROLLBACK_SIGSEGV 2
 #define ROLLBACK_EXT_LIB 3
 #define ROLLBACK_MALFORMED_INDIRECT_BR 4
 
+#define GADGET_SPECFUZZ_ASAN 1
+#define GADGET_SPECFUZZ_SIGSEGV 11
+
 extern scratchpad_t scratchpad;
 extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
 extern uint64_t checkpoint_cnt;
+extern statistics_t simulation_statistics;
 
 __attribute__((preserve_most)) void libcheckpoint_enable();
 __attribute__((preserve_most)) void libcheckpoint_disable();
