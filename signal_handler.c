@@ -16,7 +16,7 @@ void signal_handler(int sig, siginfo_t *info, void *ucontext) {
         ucontext_t *uc = (ucontext_t *)ucontext;
         greg_t *rip = &uc->uc_mcontext.gregs[REG_RIP];
 
-        fprintf(stderr, "[NaHCO3], 11, 0x%lx, 0x%lx, 0, 0x%lx\n", *rip, (int64_t)info->si_addr, checkpoint_addr);
+        fprintf(stderr, "[NaHCO3], 11, 0x%lx, 0x%lx, 0, 0x%lx\n", *(int64_t*)rip, (int64_t)info->si_addr, checkpoint_addr);
 
         *rip = (int64_t)&restore_checkpoint_SIGSEGV;
     } else {

@@ -47,7 +47,7 @@ void print_statistics() {
     fprintf(stderr, "\tRollback MALFORMED_INDIRECT_BR: %lu\n", statistics.rollback_reason[ROLLBACK_MALFORMED_INDIRECT_BR]);
 }
 
-void libcheckpoint_enable() {
+__attribute__((preserve_most)) void libcheckpoint_enable() {
     __asan_init();
 
     poison_protected_zone();
@@ -57,7 +57,7 @@ void libcheckpoint_enable() {
     libcheckpoint_enabled = true;
 }
 
-void libcheckpoint_disable() {
+__attribute__((preserve_most)) void libcheckpoint_disable() {
     libcheckpoint_enabled = false;
 
     print_statistics();

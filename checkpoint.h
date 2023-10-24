@@ -53,8 +53,8 @@ extern scratchpad_t scratchpad;
 extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
 extern uint64_t checkpoint_cnt;
 
-void libcheckpoint_enable();
-void libcheckpoint_disable();
+__attribute__((preserve_most)) void libcheckpoint_enable();
+__attribute__((preserve_most)) void libcheckpoint_disable();
 
 void make_checkpoint();
 void add_instruction_counter_check_restore();
