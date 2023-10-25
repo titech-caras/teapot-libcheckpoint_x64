@@ -9,14 +9,12 @@
 #include <string.h>
 #include <ucontext.h>
 
-extern void restore_checkpoint_SIGSEGV();
-
 void signal_handler(int sig, siginfo_t *info, void *ucontext) {
     if (checkpoint_cnt != 0) {
         ucontext_t *uc = (ucontext_t *)ucontext;
         greg_t *rip = &uc->uc_mcontext.gregs[REG_RIP];
 
-        report_gadget_specfuzz_sigsegv((uint64_t) rip, (uint64_t) info->si_addr);
+        report_gadget_SPECFUZZ_SIGSEGV((uint64_t) rip, (uint64_t) info->si_addr);
         *rip = (int64_t)&restore_checkpoint_SIGSEGV;
     } else {
         fprintf(stderr, "Signal caught outside simulation: %s\n", strsignal(sig));

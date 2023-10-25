@@ -62,7 +62,7 @@ typedef __attribute__((aligned(16))) uint8_t scratchpad_t[SCRATCHPAD_SIZE];
 
 extern scratchpad_t scratchpad;
 extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
-extern uint64_t checkpoint_cnt;
+extern uint64_t checkpoint_cnt, instruction_cnt;
 extern statistics_t simulation_statistics;
 
 __attribute__((preserve_most)) void libcheckpoint_enable();
@@ -72,3 +72,5 @@ void make_checkpoint();
 void add_instruction_counter_check_restore();
 void restore_checkpoint(int type);
 void restore_checkpoint_registers();
+
+__attribute__((naked)) void restore_checkpoint_SIGSEGV();
