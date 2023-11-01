@@ -13,7 +13,7 @@ xsave_area_t processor_extended_states[MAX_CHECKPOINTS];
 memory_history_t memory_history[MEM_HISTORY_LEN];
 memory_history_t *memory_history_top = &memory_history[0];
 scratchpad_t scratchpad;
-void *old_rsp;
+void *old_rsp, *scratchpad_rsp;
 
 statistics_t simulation_statistics;
 

@@ -14,7 +14,7 @@ void signal_handler(int sig, siginfo_t *info, void *ucontext) {
         ucontext_t *uc = (ucontext_t *)ucontext;
         greg_t *rip = &uc->uc_mcontext.gregs[REG_RIP];
 
-        report_gadget_SPECFUZZ_SIGSEGV((uint64_t) rip, (uint64_t) info->si_addr);
+        report_gadget_SPECFUZZ_SIGSEGV((uint64_t) *rip, (uint64_t) info->si_addr);
         *rip = (int64_t)&restore_checkpoint_SIGSEGV;
     } else {
         fprintf(stderr, "Signal caught outside simulation: %s\n", strsignal(sig));
@@ -35,5 +35,5 @@ void setup_signal_handler() {
     sigaltstack(&ss, 0);
     sigfillset(&sa.sa_mask);
     sigaction(SIGSEGV, &sa, 0);
-    sigaction(SIGBUS, &sa, 0);
+    //sigaction(SIGBUS, &sa, 0);
 }
