@@ -69,7 +69,7 @@ extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
 extern uint64_t checkpoint_cnt, instruction_cnt;
 extern statistics_t simulation_statistics;
 
-__attribute__((preserve_most)) void libcheckpoint_enable();
+__attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv);
 __attribute__((preserve_most)) void libcheckpoint_disable();
 
 void make_checkpoint();

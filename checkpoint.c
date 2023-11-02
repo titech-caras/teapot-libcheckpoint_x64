@@ -50,11 +50,12 @@ void print_statistics() {
     fprintf(stderr, "\tBug SIGSEGV: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_SIGSEGV]);
 }
 
-__attribute__((preserve_most)) void libcheckpoint_enable() {
+__attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) {
     __asan_init();
 
     poison_protected_zone();
     map_dift_pages();
+    dift_taint_args(argc, argv);
     setup_signal_handler();
 
     libcheckpoint_enabled = true;

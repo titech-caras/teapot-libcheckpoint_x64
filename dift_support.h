@@ -44,3 +44,4 @@ extern dift_tag_t dift_reg_tags[DIFT_REG_TAGS_SIZE];
 #define DIFT_MEM_TAG(addr) (*(DIFT_MEM_ADDR(addr)))
 
 void map_dift_pages();
+void dift_taint_args(int argc, char **argv);

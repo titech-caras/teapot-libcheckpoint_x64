@@ -24,3 +24,14 @@ void map_dift_pages() {
     mmap_helper((void *) 0x10007fff8000, 0x100000000 - 0x7fff8000, PROT_NONE); // Gap
     mmap_helper((void *) 0x20007fff8000, 0x200000000000 - 0x7fff8000, PROT_NONE); // Gap
 }
+
+void dift_taint_args(int argc, char **argv) {
+    // Taint source: argc and argv.
+
+    dift_reg_tags[DIFT_ARG0] = TAG_ATTACKER;
+
+    for (int i = 0; i < argc; i++) {
+        size_t len = strlen(argv[i]);
+        memset(DIFT_MEM_ADDR(argv[i]), TAG_ATTACKER, len);
+    }
+}
