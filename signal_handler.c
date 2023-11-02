@@ -24,7 +24,7 @@ void signal_handler(int sig, siginfo_t *info, void *ucontext) {
 
 void setup_signal_handler() {
     static char signal_stack[SIGSTKSZ]; // so that SIGSEGV doesn't overwrite stack contents in speculation
-    stack_t ss = {
+    static stack_t ss = {
         .ss_size = SIGSTKSZ,
         .ss_sp = signal_stack,
     };
