@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 uint64_t PROTECTED_ZONE_START;
 
@@ -93,6 +94,7 @@ void restore_checkpoint(int type) {
     }
 
     instruction_cnt = checkpoint_metadata[checkpoint_cnt].instruction_cnt;
+    memcpy(dift_reg_tags, checkpoint_metadata[checkpoint_cnt].dift_reg_tags, DIFT_REG_TAGS_SIZE);
 
     restore_checkpoint_registers();
 }

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-uint8_t dift_reg_tags[48];
+dift_tag_t dift_reg_tags[DIFT_REG_TAGS_SIZE];
 
 void *mmap_helper(void *base_addr, size_t len, int prot) {
     int flags = MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED_NOREPLACE | MAP_NORESERVE;

@@ -1,4 +1,5 @@
 #include "checkpoint.h"
+#include "dift_support.h"
 
 // FIXME: refactor this thing, why is a file full of assembly .c?
 
@@ -61,6 +62,20 @@ __attribute__((naked)) void make_checkpoint() {
         "mov old_rsp, %rbx\n"
         "mov %rbx, 48(%rax)\n" // checkpoint->rsp
         );
+
+#ifdef ENABLE_DIFT
+    // Store the dift tags
+    asm volatile (
+        "movaps %xmm0, scratchpad\n"
+        "movaps dift_reg_tags+0, %xmm0\n"
+        "movaps %xmm0, 160(%rax)\n"
+        "movaps dift_reg_tags+16, %xmm0\n"
+        "movaps %xmm0, 176(%rax)\n"
+        "movaps dift_reg_tags+32, %xmm0\n"
+        "movaps %xmm0, 192(%rax)\n"
+        "movaps scratchpad, %xmm0\n"
+        );
+#endif
 
     // Store other general purpose registers
     asm volatile (

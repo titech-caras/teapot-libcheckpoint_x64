@@ -2,13 +2,17 @@
 
 #include <stdint.h>
 
+#define ENABLE_DIFT
+
 #define TAG_ATTACKER 1
 #define TAG_SECRET 2
 
 typedef uint8_t dift_tag_t;
 
+#define DIFT_REG_TAGS_SIZE 48
+
 // 0~15 = rax~r15, 16~47=zmm0~zmm31
-extern dift_tag_t dift_reg_tags[48];
+extern dift_tag_t dift_reg_tags[DIFT_REG_TAGS_SIZE];
 
 #define DIFT_REG_RAX 0
 #define DIFT_REG_RBX 1

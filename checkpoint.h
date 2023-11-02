@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "dift_support.h"
+
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
@@ -33,7 +35,9 @@ typedef __attribute__((aligned(256))) struct checkpoint_metadata {
     memory_history_t *memory_history_top;
     uint64_t return_address;
 
-    uint64_t alignment[12];
+    dift_tag_t dift_reg_tags[DIFT_REG_TAGS_SIZE];
+
+    uint64_t alignment[6];
 } checkpoint_metadata_t;
 
 typedef struct statistics {
