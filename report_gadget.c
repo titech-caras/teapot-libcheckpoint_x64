@@ -20,5 +20,6 @@ void report_gadget(int gadget_type, uint64_t gadget_addr, uint64_t access_addr) 
 
 __attribute__((preserve_most)) DEF_REPORT_GADGET(SPECFUZZ_ASAN);
 DEF_REPORT_GADGET(SPECFUZZ_SIGSEGV);
+__attribute__((preserve_most)) DEF_REPORT_GADGET(KASPER);
 
 #undef DEF_REPORT_GADGET

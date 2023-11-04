@@ -45,7 +45,7 @@ typedef struct statistics {
     uint64_t rollback_reason[5];
 
     uint64_t total_bug;
-    uint64_t bug_type[20];
+    uint64_t bug_type[100];
 } statistics_t;
 
 typedef __attribute__((aligned(64))) struct xsave_area {
@@ -63,6 +63,7 @@ typedef __attribute__((aligned(16))) uint8_t scratchpad_t[SCRATCHPAD_SIZE];
 
 #define GADGET_SPECFUZZ_ASAN 1
 #define GADGET_SPECFUZZ_SIGSEGV 11
+#define GADGET_KASPER 42
 
 extern scratchpad_t scratchpad;
 extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];

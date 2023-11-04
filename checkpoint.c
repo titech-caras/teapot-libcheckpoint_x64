@@ -48,6 +48,7 @@ void print_statistics() {
     fprintf(stderr, "Total Bugs: %lu\n", simulation_statistics.total_bug);
     fprintf(stderr, "\tBug ASAN: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_ASAN]);
     fprintf(stderr, "\tBug SIGSEGV: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_SIGSEGV]);
+    fprintf(stderr, "\tBug KASPER: %lu\n", simulation_statistics.bug_type[GADGET_KASPER]);
 }
 
 __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) {
