@@ -33,6 +33,12 @@ DIFT_WRAPPER(getc, int, FILE *file) {
     return getc(file);
 }
 
+// Taint source: fgetc.
+DIFT_WRAPPER(fgetc, int, FILE *file) {
+    dift_reg_tags[DIFT_RET] = TAG_ATTACKER;
+    return fgetc(file);
+}
+
 // Taint source: getchar.
 DIFT_WRAPPER(getchar, int) {
     dift_reg_tags[DIFT_RET] = TAG_ATTACKER;
