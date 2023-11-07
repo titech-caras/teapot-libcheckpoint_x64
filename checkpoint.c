@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <string.h>
 
+#define COVERAGE
+
 uint64_t PROTECTED_ZONE_START;
 
 checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
@@ -24,7 +26,13 @@ bool libcheckpoint_enabled = false;
 
 uint64_t PROTECTED_ZONE_END;
 
-void __asan_init();
+__attribute__((weak)) void __asan_init(void);
+
+#ifdef COVERAGE
+__attribute__((weak)) void __sanitizer_cov_trace_pc_guard_init(uint32_t* start, uint32_t* stop);
+extern uint32_t guard_start asm("__guard_start__NaHCO3__");
+extern uint32_t guard_end asm("__guard_end__NaHCO3__");
+#endif
 
 void poison_protected_zone() {
     // Poison first page
@@ -52,7 +60,15 @@ void print_statistics() {
 }
 
 __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) {
-    __asan_init();
+    if (__asan_init) {
+        __asan_init();
+    }
+
+#ifdef COVERAGE
+    if (__sanitizer_cov_trace_pc_guard_init) {
+        __sanitizer_cov_trace_pc_guard_init(&guard_start, &guard_end);
+    }
+#endif
 
     poison_protected_zone();
     map_dift_pages();
