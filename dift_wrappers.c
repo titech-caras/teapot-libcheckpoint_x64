@@ -17,6 +17,15 @@ DIFT_WRAPPER(fread, size_t, void *buffer, size_t size, size_t count, FILE *strea
     return written_size;
 }
 
+// Taint source: fread_unlocked.
+DIFT_WRAPPER(fread_unlocked, size_t, void *buffer, size_t size, size_t count, FILE *stream) {
+    size_t written_size = fread_unlocked(buffer, size, count, stream);
+    if (written_size > 0) {
+        memset(DIFT_MEM_ADDR(buffer), TAG_ATTACKER, written_size);
+    }
+    return written_size;
+}
+
 // Taint source: getc.
 DIFT_WRAPPER(getc, int, FILE *file) {
     dift_reg_tags[DIFT_RET] = TAG_ATTACKER;
@@ -32,6 +41,11 @@ DIFT_WRAPPER(getchar, int) {
 DIFT_WRAPPER(atoi, int, const char *str) {
     dift_reg_tags[DIFT_RET] = DIFT_MEM_TAG(str);
     return atoi(str);
+}
+
+DIFT_WRAPPER(strtol, long int, const char *nptr, char **endptr, int base) {
+    dift_reg_tags[DIFT_RET] = DIFT_MEM_TAG(nptr);
+    return strtol(nptr, endptr, base);
 }
 
 DIFT_WRAPPER(strlen, size_t, const char *str) {
