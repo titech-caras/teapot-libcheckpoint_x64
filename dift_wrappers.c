@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 // TODO: eventually move this into an independent project and make the interface compatible with dfsan
 
@@ -77,4 +78,10 @@ DIFT_WRAPPER(strcpy, char*, char *dest, const char *src) {
 DIFT_WRAPPER(memset, void*, void *dest, int ch, size_t count) {
     memset(DIFT_MEM_ADDR(dest), dift_reg_tags[DIFT_ARG1], count);
     return memset(dest, ch, count);
+}
+
+DIFT_WRAPPER(log2, double, double arg) {
+    // TODO: automate transformation of purely functional functions
+    dift_reg_tags[DIFT_RET] = dift_reg_tags[DIFT_ARG0];
+    return log2(arg);
 }
