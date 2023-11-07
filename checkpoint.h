@@ -70,12 +70,15 @@ extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
 extern uint64_t checkpoint_cnt, instruction_cnt;
 extern statistics_t simulation_statistics;
 
+extern volatile bool in_restore_memlog;
+
 __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv);
 __attribute__((preserve_most)) void libcheckpoint_disable();
 
 void make_checkpoint();
 void add_instruction_counter_check_restore();
 void restore_checkpoint(int type);
+void restore_checkpoint_memlog();
 void restore_checkpoint_registers();
 
 __attribute__((naked)) void restore_checkpoint_SIGSEGV();

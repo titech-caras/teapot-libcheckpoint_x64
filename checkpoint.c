@@ -23,6 +23,7 @@ statistics_t simulation_statistics;
 uint64_t checkpoint_cnt = 0;
 uint64_t instruction_cnt = 0;
 bool libcheckpoint_enabled = false;
+volatile bool in_restore_memlog = false;
 
 uint64_t PROTECTED_ZONE_END;
 
@@ -106,13 +107,20 @@ void restore_checkpoint(int type) {
     simulation_statistics.rollback_reason[type]++;
 
     checkpoint_cnt--;
-    while (memory_history_top > checkpoint_metadata[checkpoint_cnt].memory_history_top) {
-        memory_history_top--;
-        *(uint64_t*)(memory_history_top->addr) = memory_history_top->data;
-    }
+    restore_checkpoint_memlog();
 
     instruction_cnt = checkpoint_metadata[checkpoint_cnt].instruction_cnt;
     memcpy(dift_reg_tags, checkpoint_metadata[checkpoint_cnt].dift_reg_tags, DIFT_REG_TAGS_SIZE);
 
     restore_checkpoint_registers();
+}
+
+__attribute__((noinline)) void restore_checkpoint_memlog() {
+    in_restore_memlog = true;
+    while (memory_history_top > checkpoint_metadata[checkpoint_cnt].memory_history_top) {
+        // This may fail if the address is only readable. SIGSEGV handler detects this and the entry will be skipped.
+        memory_history_top--;
+        *(uint64_t*)(memory_history_top->addr) = memory_history_top->data;
+    }
+    in_restore_memlog = false;
 }
