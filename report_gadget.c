@@ -2,6 +2,7 @@
 #include "checkpoint.h"
 
 #include <stdio.h>
+#include <signal.h>
 
 void report_gadget(int gadget_type, uint64_t gadget_addr, uint64_t access_addr) {
     simulation_statistics.total_bug++;
@@ -11,6 +12,10 @@ void report_gadget(int gadget_type, uint64_t gadget_addr, uint64_t access_addr) 
             gadget_type, gadget_addr, access_addr,
             checkpoint_metadata[checkpoint_cnt - 1].return_address,
             instruction_cnt);
+
+    if (gadget_type == GADGET_KASPER || gadget_type == GADGET_SPECFUZZ_ASAN) {
+        raise(SIGUSR1);
+    }
 }
 
 #define DEF_REPORT_GADGET(TYPE) \
