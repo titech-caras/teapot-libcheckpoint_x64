@@ -5,6 +5,12 @@
 
 #include "dift_support.h"
 
+//==========config===========
+#define VERBOSE
+#define COVERAGE
+//===========================
+
+
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 

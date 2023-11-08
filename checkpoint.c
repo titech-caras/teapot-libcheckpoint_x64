@@ -6,8 +6,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define COVERAGE
-
 uint64_t PROTECTED_ZONE_START;
 
 checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
@@ -86,7 +84,9 @@ __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) 
 __attribute__((preserve_most)) void libcheckpoint_disable() {
     libcheckpoint_enabled = false;
 
+#ifdef VERBOSE
     print_statistics();
+#endif
 }
 
 #define DEF_RESTORE_CHECKPOINT(REASON) \
