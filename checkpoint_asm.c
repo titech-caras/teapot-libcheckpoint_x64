@@ -104,6 +104,8 @@ __attribute__((naked)) void make_checkpoint() {
         "mov %rbx, 136(%rax)\n" // checkpoint->instruction_cnt
         "mov memory_history_top, %rbx\n"
         "mov %rbx, 144(%rax)\n" // checkpoint->memory_history_top
+        "mov guard_list_top, %rbx\n"
+        "mov %rbx, 208(%rax)\n" // checkpoint->guard_list_top
         );
 
     // Exit cleanup, go to the trampoline

@@ -15,6 +15,9 @@ xsave_area_t processor_extended_states[MAX_CHECKPOINTS];
 
 memory_history_t memory_history[MEM_HISTORY_LEN];
 memory_history_t *memory_history_top = &memory_history[0];
+uint32_t guard_list[GUARD_LIST_LEN];
+uint32_t *guard_list_top = &guard_list[0];
+
 scratchpad_t scratchpad;
 void *old_rsp, *scratchpad_rsp;
 
@@ -30,7 +33,8 @@ uint64_t PROTECTED_ZONE_END;
 __attribute__((weak)) void __asan_init(void);
 
 #ifdef COVERAGE
-__attribute__((weak)) void __sanitizer_cov_trace_pc_guard_init(uint32_t* start, uint32_t* stop);
+__attribute__((weak)) void __sanitizer_cov_trace_pc_guard_init(uint32_t *start, uint32_t *stop);
+__attribute__((weak)) void __sanitizer_cov_trace_pc_guard(uint32_t *guard);
 extern uint32_t guard_start asm("__guard_start__NaHCO3__");
 extern uint32_t guard_end asm("__guard_end__NaHCO3__");
 #endif
@@ -108,6 +112,15 @@ void restore_checkpoint(int type) {
 
     checkpoint_cnt--;
     restore_checkpoint_memlog();
+
+#ifdef COVERAGE
+    if (__sanitizer_cov_trace_pc_guard) {
+        while (guard_list_top > checkpoint_metadata[checkpoint_cnt].guard_list_top) {
+            guard_list_top--;
+            __sanitizer_cov_trace_pc_guard(&guard_start + *guard_list_top);
+        }
+    }
+#endif
 
     instruction_cnt = checkpoint_metadata[checkpoint_cnt].instruction_cnt;
     memcpy(dift_reg_tags, checkpoint_metadata[checkpoint_cnt].dift_reg_tags, DIFT_REG_TAGS_SIZE);

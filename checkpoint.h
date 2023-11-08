@@ -9,6 +9,7 @@
 #define STR(x) STR_HELPER(x)
 
 #define MEM_HISTORY_LEN 1024
+#define GUARD_LIST_LEN 300
 #define SCRATCHPAD_SIZE 1048576
 #define MAX_CHECKPOINTS 1
 
@@ -37,7 +38,9 @@ typedef __attribute__((aligned(256))) struct checkpoint_metadata {
 
     dift_tag_t dift_reg_tags[DIFT_REG_TAGS_SIZE];
 
-    uint64_t alignment[6];
+    uint32_t *guard_list_top;
+
+    uint64_t alignment[5];
 } checkpoint_metadata_t;
 
 typedef struct statistics {
@@ -67,6 +70,7 @@ typedef __attribute__((aligned(16))) uint8_t scratchpad_t[SCRATCHPAD_SIZE];
 
 extern scratchpad_t scratchpad;
 extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
+extern uint32_t guard_list[GUARD_LIST_LEN];
 extern uint64_t checkpoint_cnt, instruction_cnt;
 extern statistics_t simulation_statistics;
 
