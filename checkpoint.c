@@ -38,11 +38,6 @@ extern uint32_t guard_end asm("__guard_end__NaHCO3__");
 #endif
 
 void poison_protected_zone() {
-    // Poison first page
-    for (void *i = (void*)0; i < (void*)4096; i += 64 * 8) {
-        *(uint64_t*)(0x7fff8000 + ((uint64_t)i >> 3)) = -1;
-    }
-
     for (void *i = &PROTECTED_ZONE_START; i <= (void*)&PROTECTED_ZONE_END; i += 64 * 8) {
         *(uint64_t*)(0x7fff8000 + ((uint64_t)i >> 3)) = -1;
     }
@@ -78,6 +73,7 @@ __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) 
     dift_taint_args(argc, argv);
     setup_signal_handler();
 
+    fprintf(stderr, "[NaHCO3] Starting\n");
     libcheckpoint_enabled = true;
 }
 
@@ -85,7 +81,7 @@ __attribute__((preserve_most)) void libcheckpoint_disable() {
     libcheckpoint_enabled = false;
 
 #ifdef VERBOSE
-    print_statistics();
+    //print_statistics();
 #endif
 }
 
@@ -117,7 +113,9 @@ void restore_checkpoint(int type) {
     if (__sanitizer_cov_trace_pc_guard) {
         while (guard_list_top > checkpoint_metadata[checkpoint_cnt].guard_list_top) {
             guard_list_top--;
-            __sanitizer_cov_trace_pc_guard(&guard_start + *guard_list_top);
+            uint32_t *guard_ptr = &guard_start + *guard_list_top;
+            if (!*guard_ptr) continue;
+            __sanitizer_cov_trace_pc_guard(guard_ptr);
         }
     }
 #endif

@@ -3,15 +3,22 @@
 
 // FIXME: refactor this thing, why is a file full of assembly .c?
 
+#ifdef COVERAGE
+void hfuzz_trace_pc(uintptr_t pc);
+#endif
+
 struct {
     void *trampoline_addr, *return_addr;
 } checkpoint_target_metadata;
 __attribute__((naked)) void make_checkpoint() {
+    // TODO: refactor this to use the scratchpad, don't switch stacks
     // Store %rax and FLAGS
     asm volatile (
         SWITCH_TO_SCRATCHPAD_STACK
-        "pushfq\n"
         "push %rax\n"
+        "lahf\n"
+        "seto %al\n"
+        "push %rax\n" // flags
         "push %rbx\n"
         "mov checkpoint_cnt, %rax\n"
         /*"cmp $" STR(MAX_CHECKPOINTS) ", %rax\n" // TODO: use a better strategy to determine checkpoint skipping
@@ -31,16 +38,16 @@ __attribute__((naked)) void make_checkpoint() {
         "mov $0xFFFFFFFF, %eax\n"
         "mov $0xFFFFFFFF, %edx\n" // TODO: maybe save only the necessary components?
         //"xsave (%rbx)\n"
-        "fxsave64 (%rbx)\n"
+        //"fxsave64 (%rbx)\n"
 
-        /*"movaps %xmm0, (%rbx)\n"
+        "movaps %xmm0, (%rbx)\n"
         "movaps %xmm1, 16(%rbx)\n"
         "movaps %xmm2, 32(%rbx)\n"
         "movaps %xmm3, 48(%rbx)\n"
         "movaps %xmm4, 64(%rbx)\n"
         "movaps %xmm5, 80(%rbx)\n"
         "movaps %xmm6, 96(%rbx)\n"
-        "movaps %xmm7, 112(%rbx)\n"*/
+        "movaps %xmm7, 112(%rbx)\n"
 
         "pop %rdx\n"
         "pop %rax\n"
@@ -53,9 +60,9 @@ __attribute__((naked)) void make_checkpoint() {
         "add %rbx, %rax\n"
         "mov (%rsp), %rbx\n" // Original %rbx
         "mov %rbx, 8(%rax)\n" // checkpoint->rbx
-        "mov 8(%rsp), %rbx\n" // Original %rax
+        "mov 16(%rsp), %rbx\n" // Original %rax
         "mov %rbx, (%rax)\n" // checkpoint->rax
-        "mov 16(%rsp), %rbx\n" // Original FLAGS
+        "mov 8(%rsp), %rbx\n" // Original FLAGS
         "mov %rbx, 128(%rax)\n" // checkpoint->flags
         "mov checkpoint_target_metadata+8, %rbx\n" // return address
         "mov %rbx, 152(%rax)\n" // checkpoint->return_address
@@ -108,11 +115,31 @@ __attribute__((naked)) void make_checkpoint() {
         "mov %rbx, 208(%rax)\n" // checkpoint->guard_list_top
         );
 
+#ifdef COVERAGE
+    // Call Trace PC
+    asm volatile (
+        "movq checkpoint_target_metadata+8, %rdi\n" // Return address
+        "mov %rax, %rbx\n"
+        "call hfuzz_trace_pc\n"
+        "mov %rbx, %rax\n"
+        "mov 16(%rax), %rcx\n" // Restore the caller-saved registers
+        "mov 24(%rax), %rdx\n"
+        "mov 32(%rax), %rsi\n"
+        "mov 40(%rax), %rdi\n"
+        "mov 64(%rax), %r8\n"
+        "mov 72(%rax), %r9\n"
+        "mov 80(%rax), %r10\n"
+        "mov 88(%rax), %r11\n"
+    );
+#endif
+
     // Exit cleanup, go to the trampoline
     asm volatile (
         "pop %rbx\n"
+        "pop %rax\n" // flags
+        "add $0x7f, %al\n"
+        "sahf\n"
         "pop %rax\n"
-        "popfq\n"
         SWITCH_TO_ORIGINAL_STACK
         "jmp *(checkpoint_target_metadata)\n" // Trampoline address
         );
@@ -121,8 +148,10 @@ __attribute__((naked)) void make_checkpoint() {
     asm volatile (
         ".Lskip_checkpoint:"
         "pop %rbx\n"
+        "pop %rax\n" // flags
+        "add $0x7f, %al\n"
+        "sahf\n"
         "pop %rax\n"
-        "popfq\n"
         SWITCH_TO_ORIGINAL_STACK
         "jmp *(checkpoint_target_metadata+8)\n" // Return address
         );
@@ -147,16 +176,16 @@ __attribute__((naked)) void restore_checkpoint_registers() {
         "mov $0xFFFFFFFF, %eax\n"
         "mov $0xFFFFFFFF, %edx\n" // TODO: maybe restore only the necessary components?
         //"xrstor (%r8)\n"
-        "fxrstor64 (%r8)\n"
+        //"fxrstor64 (%r8)\n"
 
-        /*"movaps (%r8), %xmm0 \n"
+        "movaps (%r8), %xmm0 \n"
         "movaps 16(%r8), %xmm1 \n"
         "movaps 32(%r8), %xmm2 \n"
         "movaps 48(%r8), %xmm3 \n"
         "movaps 64(%r8), %xmm4 \n"
         "movaps 80(%r8), %xmm5 \n"
         "movaps 96(%r8), %xmm6 \n"
-        "movaps 112(%r8), %xmm7 \n"*/
+        "movaps 112(%r8), %xmm7 \n"
 
         "mov %r11, %rax\n"
         );
@@ -182,15 +211,14 @@ __attribute__((naked)) void restore_checkpoint_registers() {
         );
 
     asm volatile(
-        SWITCH_TO_SCRATCHPAD_STACK
-        "mov 128(%rax), %rbx\n" // checkpoint->flags
-        "push %rbx\n"
-        "popfq\n"
-        SWITCH_TO_ORIGINAL_STACK
-        "mov 152(%rax), %rbx\n" // checkpoint->return_address
-        "mov %rbx, checkpoint_target_metadata+8\n"
-        "mov 8(%rax), %rbx\n" // restore %rbx
-        "mov (%rax), %rax\n" // restore %rax
+        "mov %rax, %rbx\n"
+        "mov 128(%rbx), %rax\n" // checkpoint->flags
+        "add $0x7f, %al\n"
+        "sahf\n"
+        "mov 152(%rbx), %rax\n" // checkpoint->return_address
+        "mov %rax, checkpoint_target_metadata+8\n"
+        "mov (%rbx), %rax\n" // restore %rax
+        "mov 8(%rbx), %rbx\n" // restore %rbx
         "jmp *(checkpoint_target_metadata+8)"
         );
 }
