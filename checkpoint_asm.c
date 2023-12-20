@@ -7,6 +7,14 @@
 void hfuzz_trace_pc(uintptr_t pc);
 #endif
 
+#define RDTSC_STAT() \
+        "rdtsc\n" \
+        "shl $32, %rdx\n" \
+        "or %rdx, %rax\n" \
+        "mov %rax, %rdx\n" \
+        "sub last_rdtsc, %rax\n" \
+        "mov %rdx, last_rdtsc\n"
+
 struct {
     void *trampoline_addr, *return_addr;
 } checkpoint_target_metadata;
@@ -28,18 +36,23 @@ __attribute__((naked)) void make_checkpoint() {
         "incl checkpoint_cnt\n" // Increment count in memory
         );
 
-    // Store processor extended states
+    // Take timer & store processor extended states
     asm volatile (
         "push %rax\n" // Save the original counter for now
+        "push %rdx\n"
         "lea processor_extended_states, %rbx\n"
         "shl $11, %rax\n" // XSAVE area is aligned to 2048 bytes
         "add %rax, %rbx\n"
-        "push %rdx\n"
+
+#ifdef TIME
+        RDTSC_STAT()
+        "add %rax, simulation_statistics+0\n" // normal_time
+#endif
+
         "mov $0xFFFFFFFF, %eax\n"
         "mov $0xFFFFFFFF, %edx\n" // TODO: maybe save only the necessary components?
         //"xsave (%rbx)\n"
         //"fxsave64 (%rbx)\n"
-
         "movaps %xmm0, (%rbx)\n"
         "movaps %xmm1, 16(%rbx)\n"
         "movaps %xmm2, 32(%rbx)\n"
@@ -133,6 +146,15 @@ __attribute__((naked)) void make_checkpoint() {
     );
 #endif
 
+#ifdef TIME
+    asm volatile(
+        "mov %rax, %rbx\n"
+        RDTSC_STAT()
+        "add %rax, simulation_statistics+16\n" // ckpt_time
+        "mov 24(%rbx), %rdx\n"
+        );
+#endif
+
     // Exit cleanup, go to the trampoline
     asm volatile (
         "pop %rbx\n"
@@ -209,6 +231,16 @@ __attribute__((naked)) void restore_checkpoint_registers() {
         "mov 112(%rax), %r14\n"
         "mov 120(%rax), %r15\n"
         );
+
+#ifdef TIME
+    asm volatile(
+        "mov %rax, %rbx\n"
+        RDTSC_STAT()
+        "add %rax, simulation_statistics+24\n" // rstr_time
+        "mov %rbx, %rax\n"
+        "mov 24(%rax), %rdx\n"
+        );
+#endif
 
     asm volatile(
         "mov %rax, %rbx\n"

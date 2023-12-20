@@ -8,6 +8,7 @@
 //==========config===========
 #define VERBOSE
 #define COVERAGE
+#define TIME
 //===========================
 
 
@@ -50,6 +51,10 @@ typedef __attribute__((aligned(256))) struct checkpoint_metadata {
 } checkpoint_metadata_t;
 
 typedef struct statistics {
+    struct {
+        uint64_t normal_time, spec_time, ckpt_time, rstr_time;
+    } rdtsc_runtime;
+
     uint64_t total_ckpt;
     uint64_t rollback_reason[5];
 
@@ -79,6 +84,7 @@ extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
 extern uint32_t guard_list[GUARD_LIST_LEN];
 extern uint64_t checkpoint_cnt, instruction_cnt;
 extern statistics_t simulation_statistics;
+extern uint64_t last_rdtsc;
 
 extern volatile bool in_restore_memlog;
 

@@ -3,6 +3,7 @@
 #include "dift_support.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
@@ -21,6 +22,7 @@ void *old_rsp, *scratchpad_rsp;
 
 statistics_t simulation_statistics;
 
+uint64_t last_rdtsc = 0;
 uint64_t checkpoint_cnt = 0;
 uint64_t instruction_cnt = 0;
 bool libcheckpoint_enabled = false;
@@ -55,6 +57,19 @@ void print_statistics() {
     fprintf(stderr, "\tBug ASAN: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_ASAN]);
     fprintf(stderr, "\tBug SIGSEGV: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_SIGSEGV]);
     fprintf(stderr, "\tBug KASPER: %lu\n", simulation_statistics.bug_type[GADGET_KASPER]);
+
+#ifdef TIME
+
+    uint64_t total_time = simulation_statistics.rdtsc_runtime.normal_time +
+            simulation_statistics.rdtsc_runtime.spec_time +
+            simulation_statistics.rdtsc_runtime.ckpt_time +
+            simulation_statistics.rdtsc_runtime.rstr_time;
+    fprintf(stderr, "Time spent %%: Normal: %.2lf%% / Spec: %.2lf%% / Ckpt: %.2lf%% / Rstr: %.2lf%%\n",
+            simulation_statistics.rdtsc_runtime.normal_time * 100.0 / total_time,
+            simulation_statistics.rdtsc_runtime.spec_time * 100.0 / total_time,
+            simulation_statistics.rdtsc_runtime.ckpt_time * 100.0 / total_time,
+            simulation_statistics.rdtsc_runtime.rstr_time * 100.0 / total_time);
+#endif
 }
 
 __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) {
@@ -74,14 +89,19 @@ __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) 
     setup_signal_handler();
 
     fprintf(stderr, "[NaHCO3] Starting\n");
+    last_rdtsc = __rdtsc();
     libcheckpoint_enabled = true;
+    atexit((void (*)(void)) libcheckpoint_disable);
 }
 
 __attribute__((preserve_most)) void libcheckpoint_disable() {
+    if (!libcheckpoint_enabled)
+        return;
+
     libcheckpoint_enabled = false;
 
 #ifdef VERBOSE
-    //print_statistics();
+    print_statistics();
 #endif
 }
 
@@ -102,6 +122,12 @@ DEF_RESTORE_CHECKPOINT(MALFORMED_INDIRECT_BR)
 
 void restore_checkpoint(int type) {
     assert(checkpoint_cnt > 0);
+
+#ifdef TIME
+    uint64_t rdtsc_time = __rdtsc();
+    simulation_statistics.rdtsc_runtime.spec_time += rdtsc_time - last_rdtsc;
+    last_rdtsc = rdtsc_time;
+#endif
 
     simulation_statistics.total_ckpt++;
     simulation_statistics.rollback_reason[type]++;
