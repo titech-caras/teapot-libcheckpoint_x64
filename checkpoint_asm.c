@@ -29,8 +29,8 @@ __attribute__((naked)) void make_checkpoint() {
         "push %rax\n" // flags
         "push %rbx\n"
         "mov checkpoint_cnt, %rax\n"
-        /*"cmp $" STR(MAX_CHECKPOINTS) ", %rax\n" // TODO: use a better strategy to determine checkpoint skipping
-        "jge .Lskip_checkpoint\n"*/
+        "cmp $" STR(MAX_CHECKPOINTS) ", %rax\n" // TODO: use a better strategy to determine checkpoint skipping
+        "jge .Lskip_checkpoint\n"
         "cmpb $0, libcheckpoint_enabled\n"
         "je .Lskip_checkpoint\n"
         "incl checkpoint_cnt\n" // Increment count in memory
