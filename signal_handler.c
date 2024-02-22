@@ -37,6 +37,7 @@ void setup_signal_handler() {
     sigaltstack(&ss, 0);
     sigfillset(&sa.sa_mask);
     sigaction(SIGSEGV, &sa, 0);
+    sigaction(SIGFPE, &sa, 0);
     sigaction(SIGBUS, &sa, 0);
 
     signal(SIGUSR1, SIG_IGN);
