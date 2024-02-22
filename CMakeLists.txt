@@ -2,7 +2,9 @@ project(libcheckpoint_x64)
 cmake_minimum_required(VERSION 3.18)
 
 set(CMAKE_C_COMPILER clang)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -g")
+
+set(CMAKE_C_FLAGS_DEBUG "-g ${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS_RELEASE "-O3 ${CMAKE_C_FLAGS}")
 
 find_package(ZLIB)
 
