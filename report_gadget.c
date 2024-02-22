@@ -13,7 +13,7 @@ uint64_t r11_tmp;
 
 void make_report_call_nop(uint64_t gadget_addr) {
     uint64_t page_aligned_addr = gadget_addr & ~(4096UL - 1);
-    if (mprotect(page_aligned_addr, 8192, PROT_READ | PROT_WRITE | PROT_EXEC) == -1) {
+    if (mprotect((void*)page_aligned_addr, 8192, PROT_READ | PROT_WRITE | PROT_EXEC) == -1) {
         perror("mprotect");
         return;
     }
@@ -22,7 +22,7 @@ void make_report_call_nop(uint64_t gadget_addr) {
     *(uint32_t*)gadget_addr = 0x00441f0f;
     *(uint8_t*)(gadget_addr + 4) = 0x00;
 
-    if (mprotect(page_aligned_addr, 8192, PROT_READ | PROT_EXEC) == -1)
+    if (mprotect((void*)page_aligned_addr, 8192, PROT_READ | PROT_EXEC) == -1)
         perror("mprotect");
 }
 
