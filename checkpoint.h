@@ -7,6 +7,7 @@
 
 //==========config===========
 #define VERBOSE
+//#define VERBOSE_DBGINFO
 #define COVERAGE
 #define TIME
 //===========================

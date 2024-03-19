@@ -33,8 +33,14 @@ void report_gadget(int gadget_type, uint64_t gadget_addr, uint64_t access_addr) 
 
     if (gadget_type == GADGET_KASPER || gadget_type == GADGET_SPECFUZZ_ASAN) {
 #ifdef VERBOSE
-        fprintf(stderr, "[NaHCO3], %d, 0x%lx, 0x%lx, 0, 0x%lx, %lu\n",
-            gadget_type, gadget_addr, access_addr, ckpt_addr, instruction_cnt);
+        fprintf(stderr, "[NaHCO3], %d, 0x%lx, 0x%lx, 0, ",
+            gadget_type, gadget_addr, access_addr);
+
+        for (size_t i = checkpoint_cnt; i > 0; i--) {
+            fprintf(stderr, "0x%lx, ", checkpoint_metadata[i - 1].return_address);
+        }
+
+        fprintf(stderr, "%lu\n", instruction_cnt);
 #endif
         make_report_call_nop(gadget_addr);
 

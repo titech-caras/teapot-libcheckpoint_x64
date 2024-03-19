@@ -133,6 +133,12 @@ void restore_checkpoint(int type) {
     simulation_statistics.rollback_reason[type]++;
 
     checkpoint_cnt--;
+
+#ifdef VERBOSE_DBGINFO
+    fprintf(stderr, "[NaHCO3] Rollback: to 0x%lx at nested level %lu\n",
+            checkpoint_metadata[checkpoint_cnt].return_address, checkpoint_cnt);
+#endif
+
     restore_checkpoint_memlog();
 
 #ifdef COVERAGE
