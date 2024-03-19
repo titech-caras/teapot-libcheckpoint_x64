@@ -118,6 +118,11 @@ DIFT_WRAPPER(memcpy, void*, void *dest, void *src, size_t count) {
     return memcpy(dest, src, count);
 }
 
+DIFT_WRAPPER(__memcpy_chk, void*, void *dest, void *src, size_t count, size_t destlen) {
+    memcpy(DIFT_MEM_ADDR(dest), DIFT_MEM_ADDR(src), count);
+    return memcpy(dest, src, count);
+}
+
 DIFT_WRAPPER(memmove, void*, void *dest, void *src, size_t count) {
     memmove(DIFT_MEM_ADDR(dest), DIFT_MEM_ADDR(src), count);
     return memmove(dest, src, count);
@@ -156,6 +161,11 @@ DIFT_WRAPPER(strncpy, char*, char *dest, const char *src, size_t num) {
 }
 
 DIFT_WRAPPER(memset, void*, void *dest, int ch, size_t count) {
+    memset(DIFT_MEM_ADDR(dest), dift_reg_tags[DIFT_ARG1], count);
+    return memset(dest, ch, count);
+}
+
+DIFT_WRAPPER(__memset_chk, void*, void *dest, int ch, size_t count, size_t destlen) {
     memset(DIFT_MEM_ADDR(dest), dift_reg_tags[DIFT_ARG1], count);
     return memset(dest, ch, count);
 }
