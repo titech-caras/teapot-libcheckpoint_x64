@@ -16,7 +16,7 @@ void hfuzz_trace_pc(uintptr_t pc);
         "mov %rdx, last_rdtsc\n"
 
 struct {
-    void *trampoline_addr, *return_addr;
+    void *trampoline_addr, *return_addr, *branch_counter_addr;
 } checkpoint_target_metadata;
 __attribute__((naked)) void make_checkpoint() {
     // TODO: refactor this to use the scratchpad, don't switch stacks
@@ -28,11 +28,38 @@ __attribute__((naked)) void make_checkpoint() {
         "seto %al\n"
         "push %rax\n" // flags
         "push %rbx\n"
-        "mov checkpoint_cnt, %rax\n"
-        "cmp $" STR(MAX_CHECKPOINTS) ", %rax\n" // TODO: use a better strategy to determine checkpoint skipping
-        "jge .Lskip_checkpoint\n"
+
+        // Check if simulation is enabled
         "cmpb $0, libcheckpoint_enabled\n"
         "je .Lskip_checkpoint\n"
+
+        // Check if we exceeded the maximum checkpoint count
+        "mov checkpoint_cnt, %rax\n"
+        "cmp $" STR(MAX_CHECKPOINTS) ", %rax\n"
+        "jge .Lskip_checkpoint\n"
+
+#ifdef USE_BRANCH_EXEC_COUNT
+        "mov checkpoint_target_metadata+16, %rbx\n" // branch counter address
+        "movl (%rbx), %ebx\n" // Zero-extended copy of execution count
+#endif
+
+#ifdef SPECFUZZ_PRIORITIZED_SIMULATION
+        "tzcntq %rbx, %rbx\n" // Count trailing zeros
+        "shrq $1, %rbx\n"
+        "cmp checkpoint_cnt, %rbx\n"
+        "jl .Lskip_checkpoint\n"
+#endif
+
+#ifdef BRANCH_MAX_EXEC_COUNT
+        "cmp $" STR(BRANCH_MAX_EXEC_COUNT) ", %rbx\n"
+        "jge .Lskip_checkpoint\n"
+#endif
+
+#ifdef USE_BRANCH_EXEC_COUNT
+        "mov checkpoint_target_metadata+16, %rbx\n" // branch counter address
+        "incl (%rbx)\n" // Increase branch execution count
+#endif
+
         "incl checkpoint_cnt\n" // Increment count in memory
         );
 
