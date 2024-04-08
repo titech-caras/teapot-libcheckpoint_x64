@@ -67,8 +67,9 @@ void report_gadget(int gadget_type, uint64_t gadget_addr, uint64_t access_addr) 
 
 __attribute__((preserve_most)) DEF_REPORT_GADGET(SPECFUZZ_ASAN_READ);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(SPECFUZZ_ASAN_WRITE);
-__attribute__((preserve_most)) DEF_REPORT_GADGET(SPECTAINT_BCB);
 DEF_REPORT_GADGET(SIGSEGV);
+__attribute__((preserve_most)) DEF_REPORT_GADGET(SPECTAINT_BCB);
+__attribute__((preserve_most)) DEF_REPORT_GADGET(SPECTAINT_BCBS);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(KASPER_CACHE);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(KASPER_MDS);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(KASPER_PORT);
