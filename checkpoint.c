@@ -53,10 +53,10 @@ void print_statistics() {
     fprintf(stderr, "\tRollback EXT_LIB: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_EXT_LIB]);
     fprintf(stderr, "\tRollback MALFORMED_INDIRECT_BR: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_MALFORMED_INDIRECT_BR]);
 
-    fprintf(stderr, "Total Bugs: %lu\n", simulation_statistics.total_bug);
+    /*fprintf(stderr, "Total Bugs: %lu\n", simulation_statistics.total_bug);
     fprintf(stderr, "\tBug ASAN: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_ASAN]);
     fprintf(stderr, "\tBug SIGSEGV: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_SIGSEGV]);
-    fprintf(stderr, "\tBug KASPER: %lu\n", simulation_statistics.bug_type[GADGET_KASPER]);
+    fprintf(stderr, "\tBug KASPER: %lu\n", simulation_statistics.bug_type[GADGET_KASPER]);*/
 
 #ifdef TIME
 

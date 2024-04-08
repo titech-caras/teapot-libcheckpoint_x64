@@ -82,9 +82,13 @@ typedef __attribute__((aligned(16))) uint8_t scratchpad_t[SCRATCHPAD_SIZE];
 #define ROLLBACK_EXT_LIB 3
 #define ROLLBACK_MALFORMED_INDIRECT_BR 4
 
-#define GADGET_SPECFUZZ_ASAN 1
-#define GADGET_SPECFUZZ_SIGSEGV 11
-#define GADGET_KASPER 42
+#define GADGET_SPECFUZZ_ASAN_READ 1
+#define GADGET_SPECFUZZ_ASAN_WRITE 5
+#define GADGET_SPECTAINT_BCB 8
+#define GADGET_SIGSEGV 11
+#define GADGET_KASPER_CACHE 42
+#define GADGET_KASPER_MDS 43
+#define GADGET_KASPER_PORT 44
 
 extern scratchpad_t scratchpad;
 extern checkpoint_metadata_t checkpoint_metadata[MAX_CHECKPOINTS];
