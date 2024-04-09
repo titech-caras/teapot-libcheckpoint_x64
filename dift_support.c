@@ -8,6 +8,13 @@
 
 dift_tag_t dift_reg_tags[DIFT_REG_TAGS_SIZE];
 
+/*
+ * If a manual tag update is required as a result of a gadget policy,
+ * it is buffered here first and updated after DIFT propagation.
+ */
+dift_tag_t dift_reg_queued_tag = 0x0;
+uint8_t dift_reg_queued_id = 0x0;
+
 void *mmap_helper(void *base_addr, size_t len, int prot) {
     int flags = MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED_NOREPLACE | MAP_NORESERVE;
     void *addr = mmap(base_addr, len, prot, flags, -1, 0);
