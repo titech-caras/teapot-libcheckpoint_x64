@@ -6,7 +6,7 @@
 
 #define TAG_ATTACKER 1
 #define TAG_SECRET 2
-#define TAG_SECRET_NON_CONTROLLED 4
+#define TAG_SECRET_SPECTAINT 4
 
 typedef uint8_t dift_tag_t;
 
