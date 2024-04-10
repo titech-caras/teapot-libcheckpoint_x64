@@ -88,7 +88,9 @@ __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) 
     dift_taint_args(argc, argv);
     setup_signal_handler();
 
-    fprintf(stderr, "[NaHCO3] Starting\n");
+    fprintf(stderr, "[NaHCO3], "
+        "Gadget Type, Gadget Address, Mem Access Address, "
+        "Tag, Instruction Counter, Checkpoint Addresses\n");
     last_rdtsc = __rdtsc();
     libcheckpoint_enabled = true;
     atexit((void (*)(void)) libcheckpoint_disable);

@@ -6,5 +6,3 @@ typedef struct gadget_desc {
 
     uint64_t gadget_type;
 } gadget_desc_t;
-
-void report_gadget_SIGSEGV(uint64_t gadget_addr, uint64_t access_addr);

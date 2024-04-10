@@ -26,20 +26,19 @@ void make_report_call_nop(uint64_t gadget_addr) {
         perror("mprotect");
 }
 
-void report_gadget(int gadget_type, uint64_t gadget_addr, uint64_t access_addr) {
+void report_gadget(const char * gadget_desc, int gadget_type, uint64_t gadget_addr, uint64_t access_addr, dift_tag_t tag) {
     simulation_statistics.total_bug++;
     simulation_statistics.bug_type[gadget_type]++;
 
     if (gadget_type != GADGET_SIGSEGV) {
 #ifdef VERBOSE
-        fprintf(stderr, "[NaHCO3], %d, 0x%lx, 0x%lx, 0, ",
-            gadget_type, gadget_addr, access_addr);
+        fprintf(stderr, "[NaHCO3], %d %s, 0x%lx, 0x%lx, 0x%x, %lu, ",
+            gadget_type, gadget_desc, gadget_addr, access_addr, tag, instruction_cnt);
 
         for (size_t i = checkpoint_cnt; i > 0; i--) {
             fprintf(stderr, "0x%lx, ", checkpoint_metadata[i - 1].return_address);
         }
-
-        fprintf(stderr, "%lu\n", instruction_cnt);
+        putchar('\n');
 #endif
         make_report_call_nop(gadget_addr);
 
@@ -59,17 +58,16 @@ void report_gadget(int gadget_type, uint64_t gadget_addr, uint64_t access_addr) 
 }
 
 #define DEF_REPORT_GADGET(TYPE) \
-    void report_gadget_##TYPE(uint64_t gadget_addr, uint64_t access_addr) { \
+    void report_gadget_##TYPE(uint64_t gadget_addr, uint64_t access_addr, dift_tag_t tag) { \
         PRESERVE_R11(); \
-        report_gadget(GADGET_##TYPE, gadget_addr, access_addr); \
+        report_gadget(STR(TYPE), GADGET_##TYPE, gadget_addr, access_addr, tag); \
         RESTORE_R11(); \
     }
 
-__attribute__((preserve_most)) DEF_REPORT_GADGET(SPECFUZZ_ASAN_READ);
+/*__attribute__((preserve_most)) DEF_REPORT_GADGET(SPECFUZZ_ASAN_READ);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(SPECFUZZ_ASAN_WRITE);
-DEF_REPORT_GADGET(SIGSEGV);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(SPECTAINT_BCB);
-__attribute__((preserve_most)) DEF_REPORT_GADGET(SPECTAINT_BCBS);
+__attribute__((preserve_most)) DEF_REPORT_GADGET(SPECTAINT_BCBS);*/
 __attribute__((preserve_most)) DEF_REPORT_GADGET(KASPER_CACHE);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(KASPER_MDS);
 __attribute__((preserve_most)) DEF_REPORT_GADGET(KASPER_PORT);

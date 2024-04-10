@@ -14,7 +14,7 @@ void signal_handler(int sig, siginfo_t *info, void *ucontext) {
     greg_t *rip = &uc->uc_mcontext.gregs[REG_RIP];
 
     if (checkpoint_cnt != 0) {
-        report_gadget_SIGSEGV((uint64_t) *rip, (uint64_t) info->si_addr);
+        //report_gadget_SIGSEGV((uint64_t) *rip, (uint64_t) info->si_addr);
         *rip = (int64_t)&restore_checkpoint_SIGSEGV;
     } else if (in_restore_memlog) {
         *rip = (int64_t)&restore_checkpoint_memlog;
