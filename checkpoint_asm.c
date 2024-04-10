@@ -40,7 +40,17 @@ __attribute__((naked)) void make_checkpoint() {
 
 #ifdef USE_BRANCH_EXEC_COUNT
         "mov checkpoint_target_metadata+16, %rbx\n" // branch counter address
+        "incl (%rbx)\n" // Increase branch execution count
         "movl (%rbx), %ebx\n" // Zero-extended copy of execution count
+#endif
+
+#ifdef BRANCH_MAX_EXEC_COUNT
+        "cmp $" STR(BRANCH_MAX_EXEC_COUNT) ", %rbx\n"
+    #if defined(SPECFUZZ_PRIORITIZED_SIMULATION)
+        "jl .Ldo_checkpoint\n"
+    #else
+        "jge .Lskip_checkpoint\n"
+    #endif
 #endif
 
 #ifdef SPECFUZZ_PRIORITIZED_SIMULATION
@@ -49,19 +59,12 @@ __attribute__((naked)) void make_checkpoint() {
         "cmp checkpoint_cnt, %rbx\n"
         "jl .Lskip_checkpoint\n"
 #endif
+    );
 
-#ifdef BRANCH_MAX_EXEC_COUNT
-        "cmp $" STR(BRANCH_MAX_EXEC_COUNT) ", %rbx\n"
-        "jge .Lskip_checkpoint\n"
-#endif
-
-#ifdef USE_BRANCH_EXEC_COUNT
-        "mov checkpoint_target_metadata+16, %rbx\n" // branch counter address
-        "incl (%rbx)\n" // Increase branch execution count
-#endif
-
-        "incl checkpoint_cnt\n" // Increment count in memory
-        );
+    asm volatile (
+        ".Ldo_checkpoint:\n"
+        "incl checkpoint_cnt\n"
+    );
 
     // Take timer & store processor extended states
     asm volatile (
