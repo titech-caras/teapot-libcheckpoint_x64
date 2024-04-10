@@ -30,7 +30,7 @@ void report_gadget(const char * gadget_desc, int gadget_type, uint64_t gadget_ad
     simulation_statistics.total_bug++;
     simulation_statistics.bug_type[gadget_type]++;
 
-    if (gadget_type != GADGET_SIGSEGV) {
+    //if (gadget_type != GADGET_SIGSEGV) {
 #ifdef VERBOSE
         fprintf(stderr, "[NaHCO3], %d %s, 0x%lx, 0x%lx, 0x%x, %lu, ",
             gadget_type, gadget_desc, gadget_addr, access_addr, tag, instruction_cnt);
@@ -54,7 +54,7 @@ void report_gadget(const char * gadget_desc, int gadget_type, uint64_t gadget_ad
             };
             sigqueue(getpid(), SIGUSR1, si_sigval);
         }*/
-    }
+    //}
 }
 
 #define DEF_REPORT_GADGET(TYPE) \
