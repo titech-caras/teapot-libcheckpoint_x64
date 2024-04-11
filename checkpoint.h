@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "config.h"
 #include "dift_support.h"
 
 //==========config===========
@@ -19,10 +20,7 @@
 #define MEM_HISTORY_LEN 1024
 #define GUARD_LIST_LEN 300
 #define SCRATCHPAD_SIZE 1048576
-#define MAX_CHECKPOINTS 6
 
-#define SPECFUZZ_PRIORITIZED_SIMULATION
-#define BRANCH_MAX_EXEC_COUNT 5
 #if defined(SPECFUZZ_PRIORITIZED_SIMULATION) || defined(BRANCH_MAX_EXEC_COUNT)
 #define USE_BRANCH_EXEC_COUNT
 #endif

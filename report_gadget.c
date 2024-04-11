@@ -1,5 +1,6 @@
 #include "report_gadget.h"
 #include "checkpoint.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <signal.h>
@@ -40,7 +41,10 @@ void report_gadget(const char * gadget_desc, int gadget_type, uint64_t gadget_ad
         }
         putchar('\n');
 #endif
+
+#ifdef SILENCE_GADGET_AFTER_FIRST_DISCOVERY
         make_report_call_nop(gadget_addr);
+#endif
 
         /*if (gadget_type == GADGET_KASPER) {
             gadget_desc_t gadget = {
