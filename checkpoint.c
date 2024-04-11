@@ -47,16 +47,24 @@ void poison_protected_zone() {
 
 void print_statistics() {
     fprintf(stderr, "Total Checkpoints: %lu\n", simulation_statistics.total_ckpt);
+
+    for (int i = 0; i < MAX_CHECKPOINTS; i++) {
+        fprintf(stderr, "\tDepth %d: %lu\n", i + 1, simulation_statistics.ckpt_depth[i]);
+    }
+
+    puts("");
+    puts("Rollbacks");
     fprintf(stderr, "\tRollback ROB_LEN: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_ROB_LEN]);
     //fprintf(stderr, "\tRollback ASAN: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_ASAN]);
     fprintf(stderr, "\tRollback SIGSEGV: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_SIGSEGV]);
     fprintf(stderr, "\tRollback EXT_LIB: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_EXT_LIB]);
     fprintf(stderr, "\tRollback MALFORMED_INDIRECT_BR: %lu\n", simulation_statistics.rollback_reason[ROLLBACK_MALFORMED_INDIRECT_BR]);
 
-    /*fprintf(stderr, "Total Bugs: %lu\n", simulation_statistics.total_bug);
-    fprintf(stderr, "\tBug ASAN: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_ASAN]);
-    fprintf(stderr, "\tBug SIGSEGV: %lu\n", simulation_statistics.bug_type[GADGET_SPECFUZZ_SIGSEGV]);
-    fprintf(stderr, "\tBug KASPER: %lu\n", simulation_statistics.bug_type[GADGET_KASPER]);*/
+    puts("");
+    fprintf(stderr, "Total Bugs: %lu\n", simulation_statistics.total_bug);
+    fprintf(stderr, "\tBug KASPER_MDS: %lu\n", simulation_statistics.bug_type[GADGET_KASPER_MDS]);
+    fprintf(stderr, "\tBug KASPER_CACHE: %lu\n", simulation_statistics.bug_type[GADGET_KASPER_CACHE]);
+    fprintf(stderr, "\tBug KASPER_PORT: %lu\n", simulation_statistics.bug_type[GADGET_KASPER_PORT]);
 
 #ifdef TIME
 
@@ -132,6 +140,7 @@ void restore_checkpoint(int type) {
 #endif
 
     simulation_statistics.total_ckpt++;
+    simulation_statistics.ckpt_depth[checkpoint_cnt - 1]++;
     simulation_statistics.rollback_reason[type]++;
 
     checkpoint_cnt--;

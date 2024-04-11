@@ -63,6 +63,7 @@ typedef struct statistics {
     } rdtsc_runtime;
 
     uint64_t total_ckpt;
+    uint64_t ckpt_depth[MAX_CHECKPOINTS];
     uint64_t rollback_reason[5];
 
     uint64_t total_bug;

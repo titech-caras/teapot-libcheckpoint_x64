@@ -76,7 +76,10 @@ __attribute__((naked)) void make_checkpoint() {
 
 #ifdef TIME
         RDTSC_STAT()
-        "add %rax, simulation_statistics+0\n" // normal_time
+        "xor %rdx, %rdx\n" // normal time
+        "cmpq $1, checkpoint_cnt\n"
+        "setg %dl\n" // write to spec time if is in nested speculation
+        "add %rax, simulation_statistics(, %rdx, 8)\n"
 #endif
 
         "mov $0xFFFFFFFF, %eax\n"
