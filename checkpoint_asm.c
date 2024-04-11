@@ -44,12 +44,11 @@ __attribute__((naked)) void make_checkpoint() {
         "mov checkpoint_target_metadata+16, %rbx\n" // branch counter address
         "incl (%rbx)\n" // Increase branch execution count
         "movl (%rbx), %ebx\n" // Zero-extended copy of execution count
-        "decq %rbx\n"
 #endif
 
 #ifdef BRANCH_FULL_EXEC_COUNT
         "cmp $" STR(BRANCH_FULL_EXEC_COUNT) ", %rbx\n"
-        "jge .Lheuristic\n"
+        "jg .Lheuristic\n"
         "movq $" STR(MAX_CHECKPOINTS) ", max_checkpoints\n"
         "jmp .Lif_should_checkpoint\n"
 #endif
