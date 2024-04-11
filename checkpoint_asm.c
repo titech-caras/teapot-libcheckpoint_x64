@@ -47,9 +47,9 @@ __attribute__((naked)) void make_checkpoint() {
 #ifdef BRANCH_MAX_EXEC_COUNT
         "cmp $" STR(BRANCH_MAX_EXEC_COUNT) ", %rbx\n"
     #if defined(SPECFUZZ_PRIORITIZED_SIMULATION)
-        "jl .Ldo_checkpoint\n"
+        "jle .Ldo_checkpoint\n"
     #else
-        "jge .Lskip_checkpoint\n"
+        "jg .Lskip_checkpoint\n"
     #endif
 #endif
 
