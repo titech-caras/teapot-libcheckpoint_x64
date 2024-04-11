@@ -18,6 +18,8 @@ void hfuzz_trace_pc(uintptr_t pc);
 struct {
     void *trampoline_addr, *return_addr, *branch_counter_addr;
 } checkpoint_target_metadata;
+uint64_t max_checkpoints;
+
 __attribute__((naked)) void make_checkpoint() {
     // TODO: refactor this to use the scratchpad, don't switch stacks
     // Store %rax and FLAGS
@@ -33,36 +35,39 @@ __attribute__((naked)) void make_checkpoint() {
         "cmpb $0, libcheckpoint_enabled\n"
         "je .Lskip_checkpoint\n"
 
-        // Check if we exceeded the maximum checkpoint count
+        // Set max checkpoints on simulation entry
         "mov checkpoint_cnt, %rax\n"
-        "cmp $" STR(MAX_CHECKPOINTS) ", %rax\n"
-        "jge .Lskip_checkpoint\n"
+        "test %rax, %rax\n"
+        "jnz .Lif_should_checkpoint\n"
 
 #ifdef USE_BRANCH_EXEC_COUNT
         "mov checkpoint_target_metadata+16, %rbx\n" // branch counter address
         "incl (%rbx)\n" // Increase branch execution count
         "movl (%rbx), %ebx\n" // Zero-extended copy of execution count
+        "decq %rbx\n"
 #endif
 
-#ifdef BRANCH_MAX_EXEC_COUNT
-        "cmp $" STR(BRANCH_MAX_EXEC_COUNT) ", %rbx\n"
-    #if defined(SPECFUZZ_PRIORITIZED_SIMULATION)
-        "jle .Ldo_checkpoint\n"
-    #else
-        "jg .Lskip_checkpoint\n"
-    #endif
+#ifdef BRANCH_FULL_EXEC_COUNT
+        "cmp $" STR(BRANCH_FULL_EXEC_COUNT) ", %rbx\n"
+        "jge .Lheuristic\n"
+        "movq $" STR(MAX_CHECKPOINTS) ", max_checkpoints\n"
+        "jmp .Lif_should_checkpoint\n"
 #endif
 
+        ".Lheuristic:\n"
 #ifdef SPECFUZZ_PRIORITIZED_SIMULATION
         "tzcntq %rbx, %rbx\n" // Count trailing zeros
         "shrq $1, %rbx\n"
-        "cmp checkpoint_cnt, %rbx\n"
-        "jl .Lskip_checkpoint\n"
+        "incq %rbx\n"
+        "movq %rbx, max_checkpoints\n"
+#else
+        "movq $1, max_checkpoints\n"
 #endif
-    );
 
-    asm volatile (
-        ".Ldo_checkpoint:\n"
+        // Check if we exceeded the maximum checkpoint count
+        ".Lif_should_checkpoint:\n"
+        "cmp max_checkpoints, %rax\n"
+        "jge .Lskip_checkpoint\n"
         "incl checkpoint_cnt\n"
     );
 
