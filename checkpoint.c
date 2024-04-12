@@ -160,7 +160,11 @@ void restore_checkpoint(int type) {
             if (!*guard_ptr) continue;
             __sanitizer_cov_trace_pc_guard(guard_ptr);
         }
+    } else {
+        guard_list_top = checkpoint_metadata[checkpoint_cnt].guard_list_top;
     }
+#else
+    guard_list_top = checkpoint_metadata[checkpoint_cnt].guard_list_top;
 #endif
 
     instruction_cnt = checkpoint_metadata[checkpoint_cnt].instruction_cnt;
