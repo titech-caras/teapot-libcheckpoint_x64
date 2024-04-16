@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
+#include <limits.h>
 #include <sys/mman.h>
+
 
 // FIXME: refactor
 uint64_t r11_tmp;
@@ -28,37 +30,40 @@ void make_report_call_nop(uint64_t gadget_addr) {
 }
 
 void report_gadget(const char * gadget_desc, int gadget_type, uint64_t gadget_addr, uint64_t access_addr, dift_tag_t tag) {
+    static char buf[PIPE_BUF];
+
     simulation_statistics.total_bug++;
     simulation_statistics.bug_type[gadget_type]++;
 
-    //if (gadget_type != GADGET_SIGSEGV) {
-#ifdef VERBOSE
-        fprintf(stderr, "[NaHCO3], %d %s, 0x%lx, 0x%lx, 0x%x, %lu, ",
-            gadget_type, gadget_desc, gadget_addr, access_addr, tag, instruction_cnt);
+    char *buf_ptr = buf;
 
-        for (size_t i = checkpoint_cnt; i > 0; i--) {
-            fprintf(stderr, "0x%lx, ", checkpoint_metadata[i - 1].return_address);
-        }
-        putchar('\n');
-#endif
+    buf_ptr += sprintf(buf_ptr, "[NaHCO3], %d %s, 0x%lx, 0x%lx, 0x%x, %lu, ",
+        gadget_type, gadget_desc, gadget_addr, access_addr, tag, instruction_cnt);
+
+    for (size_t i = checkpoint_cnt; i > 0; i--) {
+        buf_ptr += sprintf(buf_ptr, "0x%lx, ", checkpoint_metadata[i - 1].return_address);
+    }
+    *(buf_ptr++) = '\n';
+    *buf_ptr = 0;
+
+    fputs(buf, stderr);
 
 #ifdef SILENCE_GADGET_AFTER_FIRST_DISCOVERY
-        make_report_call_nop(gadget_addr);
+    make_report_call_nop(gadget_addr);
 #endif
 
-        /*if (gadget_type == GADGET_KASPER) {
-            gadget_desc_t gadget = {
-                .gadget_addr = gadget_addr,
-                .access_addr = access_addr,
-                .ckpt_addr = ckpt_addr,
-                .gadget_type = gadget_type
-            };
-            union sigval si_sigval = {
-                .sival_ptr = (void*)&gadget
-            };
-            sigqueue(getpid(), SIGUSR1, si_sigval);
-        }*/
-    //}
+    /*if (gadget_type == GADGET_KASPER) {
+        gadget_desc_t gadget = {
+            .gadget_addr = gadget_addr,
+            .access_addr = access_addr,
+            .ckpt_addr = ckpt_addr,
+            .gadget_type = gadget_type
+        };
+        union sigval si_sigval = {
+            .sival_ptr = (void*)&gadget
+        };
+        sigqueue(getpid(), SIGUSR1, si_sigval);
+    }*/
 }
 
 #define DEF_REPORT_GADGET(TYPE) \
