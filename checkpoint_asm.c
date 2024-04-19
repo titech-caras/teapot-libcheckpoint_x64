@@ -168,6 +168,8 @@ __attribute__((naked)) void make_checkpoint() {
 #ifdef COVERAGE
     // Call Trace PC
     asm volatile (
+        "cmpq $1, checkpoint_cnt\n"
+        "jg .Lno_normal_coverage\n" // Skip normal coverage code if is nested speculation
         "movq checkpoint_target_metadata+8, %rdi\n" // Return address
         "mov %rax, %rbx\n"
         "call hfuzz_trace_pc\n"
@@ -180,6 +182,7 @@ __attribute__((naked)) void make_checkpoint() {
         "mov 72(%rax), %r9\n"
         "mov 80(%rax), %r10\n"
         "mov 88(%rax), %r11\n"
+        ".Lno_normal_coverage:"
     );
 #endif
 
