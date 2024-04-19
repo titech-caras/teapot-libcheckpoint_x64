@@ -35,11 +35,9 @@ void report_gadget(const char * gadget_desc, int gadget_type, uint64_t gadget_ad
     simulation_statistics.total_bug++;
     simulation_statistics.bug_type[gadget_type]++;
 
-    tag &= 0xff; // Bug in previous instrumentation versions: the upper bits of the tag register isn't cleared.
-
     char *buf_ptr = buf;
 
-    buf_ptr += sprintf(buf_ptr, "[NaHCO3], %d %s, 0x%lx, 0x%lx, 0x%x, %lu, ",
+    buf_ptr += sprintf(buf_ptr, "[NaHCO3], %d %s, 0x%lx, 0x%lx, 0x%hhx, %lu, ",
         gadget_type, gadget_desc, gadget_addr, access_addr, tag, instruction_cnt);
 
     for (size_t i = checkpoint_cnt; i > 0; i--) {
