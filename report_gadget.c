@@ -37,7 +37,7 @@ void report_gadget(const char * gadget_desc, int gadget_type, uint64_t gadget_ad
 
     char *buf_ptr = buf;
 
-    buf_ptr += sprintf(buf_ptr, "[NaHCO3], %d %s, 0x%lx, 0x%lx, 0x%hhx, %lu, ",
+    buf_ptr += sprintf(buf_ptr, "[teapot], %d %s, 0x%lx, 0x%lx, 0x%hhx, %lu, ",
         gadget_type, gadget_desc, gadget_addr, access_addr, tag, instruction_cnt);
 
     for (size_t i = checkpoint_cnt; i > 0; i--) {

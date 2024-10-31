@@ -35,8 +35,8 @@ __attribute__((weak)) void __asan_init(void);
 #ifdef COVERAGE
 __attribute__((weak)) void __sanitizer_cov_trace_pc_guard_init(uint32_t *start, uint32_t *stop);
 __attribute__((weak)) void __sanitizer_cov_trace_pc_guard(uint32_t *guard);
-extern uint32_t guard_start asm("__guard_start__NaHCO3__");
-extern uint32_t guard_end asm("__guard_end__NaHCO3__");
+extern uint32_t guard_start asm("__guard_start__teapot__");
+extern uint32_t guard_end asm("__guard_end__teapot__");
 #endif
 
 void poison_protected_zone() {
@@ -96,7 +96,7 @@ __attribute__((preserve_most)) void libcheckpoint_enable(int argc, char **argv) 
     dift_taint_args(argc, argv);
     setup_signal_handler();
 
-    fprintf(stderr, "[NaHCO3], "
+    fprintf(stderr, "[teapot], "
         "Gadget Type, Gadget Address, Mem Access Address, "
         "Tag, Instruction Counter, Checkpoint Addresses\n");
     last_rdtsc = __rdtsc();
@@ -146,7 +146,7 @@ void restore_checkpoint(int type) {
     checkpoint_cnt--;
 
 #ifdef VERBOSE_DBGINFO
-    fprintf(stderr, "[NaHCO3] Rollback: to 0x%lx at nested level %lu\n",
+    fprintf(stderr, "[teapot] Rollback: to 0x%lx at nested level %lu\n",
             checkpoint_metadata[checkpoint_cnt].return_address, checkpoint_cnt);
 #endif
 
