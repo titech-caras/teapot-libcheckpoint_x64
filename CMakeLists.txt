@@ -15,5 +15,5 @@ add_library(checkpoint_x64 ${SOURCE_LIST})
 install(TARGETS checkpoint_x64 ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 add_library(checkpoint_x64_nonest ${SOURCE_LIST})
-target_compile_options(checkpoint_x64_nonest PRIVATE -DNO_NESTED_SPECULATION)
+target_compile_options(checkpoint_x64_nonest PRIVATE -DDISABLE_NESTED_SPECULATION)
 install(TARGETS checkpoint_x64_nonest ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
